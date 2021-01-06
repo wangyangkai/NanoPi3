@@ -201,7 +201,8 @@
 /*------------------------------------------------------------------------------
  * 	SPI
  */
-#define CFG_SPI0_CLK							(10000000*5)		// spiclk = CFG_SPI0_CLK / 2
+/*#define CFG_SPI0_CLK							(10000000*5)*/		// spiclk = CFG_SPI0_CLK / 2
+#define CFG_SPI0_CLK							(1000000*2)
 #define CFG_SPI1_CLK							10000000
 #define CFG_SPI2_CLK							10000000
 
@@ -232,8 +233,11 @@
  * 	Keypad
  */
 #define CFG_KEYPAD_KEY_BUTTON					{ PAD_GPIO_ALV + 0 }
-#define CFG_KEYPAD_KEY_CODE						{ KEY_POWER }
+#define CFG_KEYPAD_KEY_BUTTON_CODE						{ KEY_POWER }
 #define CFG_KEYPAD_REPEAT						CFALSE /* 0: Repeat Off 1 : Repeat On */
+
+#define CFG_KEYPAD_KEY_OK				{ PAD_GPIO_B + 31 }
+#define CFG_KEYPAD_KEY_OK_CODE						{ KEY_OK }
 
 /*------------------------------------------------------------------------------
  * 	SDHC

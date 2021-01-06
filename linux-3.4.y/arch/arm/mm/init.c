@@ -334,6 +334,8 @@ void __init arm_memblock_init(struct meminfo *mi, struct machine_desc *mdesc)
 	memblock_reserve(__pa(_sdata), _end - _sdata);
 #else
 	memblock_reserve(__pa(_stext), _end - _stext);
+	printk("~~~ %s() _stext:%#x, size:%dKB\n", __func__, \
+		__pa(_stext), (_end - _stext)/ 1024);
 #endif
 #ifdef CONFIG_BLK_DEV_INITRD
 	if (phys_initrd_size &&
@@ -376,6 +378,8 @@ void __init bootmem_init(void)
 	max_low = max_high = 0;
 
 	find_limits(&min, &max_low, &max_high);
+	printk("~~~ %s() pfn- min:%#x, max_low:%#x, max_high:%#x\n", __func__, \
+		min, max_low, max_high);
 
 	arm_bootmem_init(min, max_low);
 

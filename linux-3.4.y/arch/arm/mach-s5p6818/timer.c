@@ -193,6 +193,8 @@ static void timer_clock_select(struct timer_info *info, long frequency)
 	/* PCLK */
 	info->clk = clk_get(NULL, name);
    	rate = clk_get_rate(info->clk);
+	printk("~~~ %s() channel:%d, frequency:%u, pclk rate:%u\n", __func__, \
+		info->channel, frequency, rate);
    	for (smux = 0; 5 > smux; smux++) {
    		mout = rate/(1<<smux), pscl = mout/frequency;
    		thz  = mout/(pscl?pscl:1);
@@ -214,6 +216,8 @@ static void timer_clock_select(struct timer_info *info, long frequency)
 		sprintf(name, "%s.%d", DEV_NAME_TIMER, info->channel);
 		clk  = clk_get(NULL, name);
 		rate = clk_round_rate(clk, frequency);
+		printk("~~~ %s() channel:%d, tout:%u, frequency:%u, rate:%u\n", __func__, \
+			info->channel, tout, frequency, rate);
 		if (abs(frequency-tout) >= abs(frequency-rate)) {
 			tout = clk_set_rate(clk, rate);
 			tmux = 5, tscl = 1;
@@ -232,6 +236,8 @@ static void timer_clock_select(struct timer_info *info, long frequency)
 
 	pr_debug("%s (ch:%d, mux=%d, scl=%d, rate=%ld, %s)\n",
 		__func__, info->channel, tmux, tscl, tout, info->in_tclk?"TCLK":"PCLK");
+	printk("~~~ %s() (ch:%d, mux:%d, scl:%d, rate:%ld, tcount:%d, %s)\n",
+		__func__, info->channel, tmux, tscl, tout, info->tcount, info->in_tclk?"TCLK":"PCLK");
 }
 
 static void timer_source_suspend(struct clocksource *cs)
@@ -302,6 +308,8 @@ static int __init timer_source_init(int ch)
 
 	pr_debug("timer.%d: source shift =%u  \n", ch, cs->shift);
 	pr_debug("timer.%d: source mult  =%u  \n", ch, cs->mult);
+	printk("~~~ %s() timer.%d, source shift:%u, mult:%u\n", __func__, \
+		ch, cs->shift, cs->mult);
 
 	/*
 	 * source timer run
@@ -417,6 +425,8 @@ static int __init timer_event_init(int ch)
 	info->channel = ch;
 	info->irqno = IRQ_PHY_TIMER_INT0 + ch;
 
+	printk("~~~ %s() timer event irqno:%d\n", __func__, info->irqno);
+
 	timer_clock_select(info, TIMER_CLOCK_EVENT_HZ);
 
 	/*
@@ -453,6 +463,7 @@ static int __init timer_event_init(int ch)
 static void __init timer_initialize(void)
 {
 	pr_debug("%s\n", __func__);
+	printk("~~~ %s()\n", __func__);
 
 	timer_source_init(CFG_TIMER_SYS_TICK_CH);
 	timer_event_init(CFG_TIMER_EVT_TICK_CH);

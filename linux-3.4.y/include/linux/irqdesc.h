@@ -110,6 +110,10 @@ static inline struct msi_desc *irq_desc_get_msi_desc(struct irq_desc *desc)
  */
 static inline void generic_handle_irq_desc(unsigned int irq, struct irq_desc *desc)
 {
+	if (irq >= IRQ_PHY_GPIOA)
+		printk("~~~ %s() irq:%u, irq_desc->irq_data.irq:%u\n", \
+			__func__, irq, irq_desc->irq_data.irq);
+
 	desc->handle_irq(irq, desc);
 }
 

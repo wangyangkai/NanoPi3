@@ -48,7 +48,6 @@
 
 #define BT_UART_PORT_LINE		(1)	/* ttySAC1 */
 
-#define UART1_CTS_IO_NUM		(PAD_GPIO_C + 5)
 #define UART1_RTS_IO_NUM		(PAD_GPIO_C + 6)
 #define UART1_RTS_ALT_RTS		2
 #define UART1_RTS_ALT_IO		1
@@ -127,13 +126,13 @@ static inline int bt_bcm_get_io_val(struct bt_ctl_gpio *bti)
 	return gpio_get_value(bti->gpio);
 }
 
-static inline void bt_bcm_rts_ctrl(int mode, int val)
+static inline void bt_bcm_rts_ctrl(int flag)
 {
-	if (mode) {
-		/* BT RTS Set to @val */
+	if (flag) {
+		/* BT RTS Set to HIGH */
 		nxp_soc_gpio_set_io_dir (UART1_RTS_IO_NUM, 1);
-		nxp_soc_gpio_set_out_value(UART1_RTS_IO_NUM, val);
 		nxp_soc_gpio_set_io_func(UART1_RTS_IO_NUM, UART1_RTS_ALT_IO);
+		nxp_soc_gpio_set_out_value(UART1_RTS_IO_NUM, 1);
 	} else {
 		/* restore BT RTS state */
 		nxp_soc_gpio_set_io_func(UART1_RTS_IO_NUM, UART1_RTS_ALT_RTS);
@@ -354,7 +353,6 @@ static int bt_bcm_rfkill_set_block(void *data, bool blocked)
 {
 	struct bt_bcm_info *bcm = data;
 	struct bt_ctl_gpio *btp;
-	int i, cts;
 
 	if (!bcm) {
 		pr_err("bt_bcm: failed to set block for NULL data\n");
@@ -368,39 +366,20 @@ static int bt_bcm_rfkill_set_block(void *data, bool blocked)
 	pr_info("bt_bcm: rfkill set_block %s %s.%d\n",
 		blocked?"Off":"On ", STR_GR(btp->gpio), BIT_NR(btp->gpio));
 
+	msleep(10);
+
 	if (!blocked) {
 		bt_bcm_set_io_val(btp, 1);	/* on */
 		bcm->running = true;
-		msleep(25);
-
-#if (BT_GPIO_WAKE_DEVICE < 0)
-		bt_bcm_rts_ctrl(1, 0);
-
-		/* BCM43438 datasheet page 57:
-		 * BTH device drive this line (BT_UART_RTS_N) low indicating
-		 * transport is ready.
-		 */
-		for (i = 0; i < 30; i++) {
-			usleep_range(500, 1000);
-			if (!(cts = gpio_get_value(UART1_CTS_IO_NUM)))
-				break;
-		}
-		pr_info("bt_bcm: wake peer by RTS, %s\n", cts ? "failed" : "ok");
-
-		bt_bcm_rts_ctrl(0, 0);
-#endif
 	} else {
 		bt_bcm_set_io_val(btp, 0);	/* off */
 		bcm->running = false;
-
-#if (BT_GPIO_WAKE_DEVICE < 0)
-		bt_bcm_rts_ctrl(1, 1);
-#endif
-		msleep(20);
 	}
 
+	msleep(50);
 	return 0;
 }
+
 
 static int bt_bcm_rfkill_suspend(struct platform_device *pdev, pm_message_t state)
 {

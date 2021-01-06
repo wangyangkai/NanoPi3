@@ -63,6 +63,8 @@ static void irq_domain_add(struct irq_domain *domain)
 	mutex_unlock(&irq_domain_mutex);
 	pr_debug("irq: Allocated domain of type %d @0x%p\n",
 		 domain->revmap_type, domain);
+	printk("~~~ %s() irq: Allocated domain of type %d @0x%p\n",
+		 __func__, domain->revmap_type, domain);
 }
 
 static unsigned int irq_domain_legacy_revmap(struct irq_domain *domain,
@@ -70,6 +72,9 @@ static unsigned int irq_domain_legacy_revmap(struct irq_domain *domain,
 {
 	irq_hw_number_t first_hwirq = domain->revmap_data.legacy.first_hwirq;
 	int size = domain->revmap_data.legacy.size;
+
+	if (hwirq >= IRQ_PHY_GPIOA)
+		printk("~~~ %s() hwirq:%lu\n", __func__, hwirq);
 
 	if (WARN_ON(hwirq < first_hwirq || hwirq >= first_hwirq + size))
 		return 0;
@@ -105,6 +110,8 @@ struct irq_domain *irq_domain_add_legacy(struct device_node *of_node,
 	if (!domain)
 		return NULL;
 
+	printk("~~~ %s() domain->revmandata first_irq:%d, first_hwirq:%u, size:%d\n", \
+		__func__, first_irq, first_hwirq, size);
 	domain->revmap_data.legacy.first_irq = first_irq;
 	domain->revmap_data.legacy.first_hwirq = first_hwirq;
 	domain->revmap_data.legacy.size = size;
@@ -122,6 +129,8 @@ struct irq_domain *irq_domain_add_legacy(struct device_node *of_node,
 			return NULL;
 		}
 	}
+
+	printk("~~~ %s() irq_desc.irq_data.hwirq/domain set\n", __func__);
 
 	/* Claim all of the irqs before registering a legacy domain */
 	for (i = 0; i < size; i++) {
@@ -502,6 +511,7 @@ unsigned int irq_find_mapping(struct irq_domain *domain,
 {
 	unsigned int i;
 	unsigned int hint = hwirq % nr_irqs;
+	unsigned int irq;
 
 	/* Look for default domain if nececssary */
 	if (domain == NULL)
@@ -510,8 +520,13 @@ unsigned int irq_find_mapping(struct irq_domain *domain,
 		return 0;
 
 	/* legacy -> bail early */
-	if (domain->revmap_type == IRQ_DOMAIN_MAP_LEGACY)
-		return irq_domain_legacy_revmap(domain, hwirq);
+	if (domain->revmap_type == IRQ_DOMAIN_MAP_LEGACY) {
+		irq = irq_domain_legacy_revmap(domain, hwirq);
+		if (irq >= IRQ_PHY_GPIOA)
+			printk("~~~ %s() hwirq:%lu, irq:%u\n", __func__, \
+					hwirq, irq);
+		return irq;
+	}
 
 	/* Slow path does a linear search of the map */
 	if (hint == 0)

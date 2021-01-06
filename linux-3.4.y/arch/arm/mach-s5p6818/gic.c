@@ -167,6 +167,9 @@ static void gic_unmask_irq(struct irq_data *d)
 
 static void gic_eoi_irq(struct irq_data *d)
 {
+	if (d->hwirq >= IRQ_PHY_GPIOA)
+		printk("~~~ %s() hwirq:%d\n", __func__, d->hwirq);
+
 	if (gic_arch_extn.irq_eoi) {
 		raw_spin_lock(&irq_controller_lock);
 		gic_arch_extn.irq_eoi(d);
@@ -279,6 +282,8 @@ asmlinkage void __exception_irq_entry gic_handle_irq(struct pt_regs *regs)
 	struct gic_chip_data *gic = &gic_data[0];
 	void __iomem *cpu_base = gic_data_cpu_base(gic);
 
+	//printk("~~~ %s() ARM_cpsr:0x%08x\n", __func__, regs->ARM_cpsr);
+
 #ifndef CONFIG_ARCH_S5P6818_REV
 	int cpu = raw_smp_processor_id();
 	if (0 != cpu) {
@@ -290,10 +295,15 @@ asmlinkage void __exception_irq_entry gic_handle_irq(struct pt_regs *regs)
 #endif
 	do {
 		irqstat = readl_relaxed(cpu_base + GIC_CPU_INTACK);
+		//printk("~~~ %s() irq ack reg:0x%08x\n", __func__, irqstat);
 		irqnr = irqstat & ~0x1c00;
 
 		if (likely(irqnr > 15 && irqnr < 1021)) {
+			if (irqnr >= IRQ_PHY_GPIOA)
+				printk("~~~ %s() hwirq:%d\n", __func__, irqnr);
 			irqnr = irq_find_mapping(gic->domain, irqnr);
+			if (irqnr >= IRQ_PHY_GPIOA)
+				printk("~~~ %s() irqnr:%d\n", __func__, irqnr);
 			handle_IRQ(irqnr, regs);
 			continue;
 		}
@@ -618,6 +628,9 @@ static void __init gic_pm_init(struct gic_chip_data *gic)
 static int gic_irq_domain_map(struct irq_domain *d, unsigned int irq,
 				irq_hw_number_t hw)
 {
+	/*printk("~~~ %s() irq:%d, hw:%d, call irq_set_chip_and_handler()\n", \
+			__func__, irq, hw); */
+	
 	if (hw < 32) {
 		irq_set_percpu_devid(irq);
 		irq_set_chip_and_handler(irq, &gic_chip,
@@ -666,6 +679,9 @@ void __init gic_init_bases(unsigned int gic_nr, int irq_start,
 	struct gic_chip_data *gic;
 	int gic_irqs, irq_base;
 
+	printk("~~~ %s() gic_nr:%d, irq_start:%d\n", __func__, \
+		gic_nr, irq_start);
+
 	BUG_ON(gic_nr >= MAX_GIC_NR);
 
 	gic = &gic_data[gic_nr];
@@ -711,6 +727,7 @@ void __init gic_init_bases(unsigned int gic_nr, int irq_start,
 	} else {
 		hwirq_base = 32;
 	}
+	printk("~~~ %s() hwirq_base:%u\n", __func__, hwirq_base);
 
 	/*
 	 * Find out how many interrupts are supported.
@@ -723,8 +740,10 @@ void __init gic_init_bases(unsigned int gic_nr, int irq_start,
 
 	gic_irqs  = NR_IRQS;
 	gic->gic_irqs = gic_irqs;
+	printk("~~~ %s() NU_IRS:%d\n", __func__, NR_IRQS);
 
 	gic_irqs -= hwirq_base; /* calculate # of irqs to allocate */
+	printk("~~~ %s() gic_irqs -= hwirq_base:%d\n", __func__, gic_irqs);
 	irq_base = irq_alloc_descs(irq_start, 16, gic_irqs, numa_node_id());
 	if (IS_ERR_VALUE(irq_base)) {
 		WARN(1, "Cannot allocate irq_descs @ IRQ%d, assuming pre-allocated\n",

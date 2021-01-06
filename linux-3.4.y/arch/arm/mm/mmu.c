@@ -768,6 +768,12 @@ static void __init create_mapping(struct map_desc *md, bool force_pages)
 		return;
 	}
 
+	/*map.pfn = __phys_to_pfn(start);
+	map.virtual = __phys_to_virt(start);
+	map.length = end - start;*/
+	printk("~~~ %s() phys:%#x, pfn:%#x, virt:%#x, length:%#x\n", \
+		__func__, phys, md->pfn, addr, length);
+
 	pgd = pgd_offset_k(addr);
 	end = addr + length;
 	do {
@@ -1051,6 +1057,12 @@ static inline void prepare_page_table(void)
 	 * Clear out all the kernel space mappings, except for the first
 	 * memory bank, up to the vmalloc region.
 	 */
+	printk("%s() lowmem_limit:%dMB\n", __func__, lowmem_limit / 1024 / 1024); 
+	printk("~~~ %s() mem.base:%#x, size:%#x, mem_base.virt:%#x\n", \
+		__func__, memblock.memory.regions[0].base, \
+		memblock.memory.regions[0].size, \
+		__phys_to_virt(memblock.memory.regions[0].base));
+
 	for (addr = __phys_to_virt(end);
 	     addr < VMALLOC_START; addr += PMD_SIZE)
 		pmd_clear(pmd_off_k(addr));
@@ -1073,7 +1085,10 @@ void __init arm_mm_memblock_reserve(void)
 	 * Reserve the page tables.  These are already in use,
 	 * and can only be in node 0.
 	 */
+	printk("~~~ %s() swapper_pg_dir virt:%#x\n", __func__, swapper_pg_dir);
 	memblock_reserve(__pa(swapper_pg_dir), SWAPPER_PG_DIR_SIZE);
+	printk("~~~ %s() swapper_pg_dir:%#x, SWAPPER_PG_DIR_SIZE:%dKB\n", __func__, \
+		__pa(swapper_pg_dir), SWAPPER_PG_DIR_SIZE/1024);
 
 #ifdef CONFIG_SA1111
 	/*

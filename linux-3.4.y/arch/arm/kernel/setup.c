@@ -736,6 +736,7 @@ static int __init parse_tag_cmdline(const struct tag *tag)
 #else
 	strlcpy(default_command_line, tag->u.cmdline.cmdline,
 		COMMAND_LINE_SIZE);
+	printk("%s() cmdline:%s\n", __func__, default_command_line);
 #endif
 	return 0;
 }
@@ -879,6 +880,8 @@ static struct machine_desc * __init setup_machine_tags(unsigned int nr)
 			" (r1 = 0x%08x).\n\n", nr);
 		dump_machine_table(); /* does not return */
 	}
+
+	printk("~~~ %s() machine_desc:%s\n", __func__, mdesc->name);
 
 	if (__atags_pointer)
 		tags = phys_to_virt(__atags_pointer);

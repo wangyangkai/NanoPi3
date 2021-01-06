@@ -63,6 +63,7 @@ static void __init alive_init(void __iomem *base, unsigned int irq_start,
 void __init nxp_cpu_irq_init(void)
 {
 	pr_debug("%s:%d\n", __func__, __LINE__);
+	printk("~~~ %s()\n", __func__);
 
 	__gic_init(GIC_DIST_BASE, (void __iomem *)GIC_CPUI_BASE);
 	gpio_init(GPIO_INT_BASE , IRQ_GPIO_START, GPIO_INT_MASK, 0);	/* 64 ~ 223 (A,B,C,D,E) */
@@ -86,6 +87,7 @@ static void __init __gic_init(void __iomem *dist_base, void __iomem *cpu_base)
 	printk(KERN_INFO "GIC   @%p: start %3d (gic %d)\n",
 		dist_base, IRQ_GIC_START, (irq-IRQ_GIC_START));
 
+	printk("~~~ %s() call gic_init()\n", __func__);
 	gic_init(0, IRQ_GIC_PPI_START, dist_base, cpu_base);
 }
 
@@ -204,6 +206,7 @@ static void alive_irq_enable(struct irq_data *d)
 	void __iomem *base = irq_data_get_irq_chip_data(d);
 	int bit = (d->irq - IRQ_ALIVE_START) & 0x1F;
 	pr_debug("%s: alive irq = %d, io = %d\n", __func__, d->irq, bit);
+	printk("~~~ %s() alive irq:%d, io:%d\n", __func__, d->irq, bit);
 
 	/* alive unmask : irq set (enable) */
 	writel((1<<bit), base + ALIVE_INT_SET);
@@ -215,6 +218,7 @@ static void alive_irq_disable(struct irq_data *d)
 	void __iomem *base = irq_data_get_irq_chip_data(d);
 	int bit = (d->irq - IRQ_ALIVE_START) & 0x1F;
 	pr_debug("%s: alive irq = %d, io = %d\n", __func__, d->irq, bit);
+	printk("~~~ %s() alive irq:%d, io:%d\n", __func__, d->irq, bit);
 
 	/* alive mask : irq reset (disable) */
 	writel((1<<bit), base + ALIVE_INT_RESET);
@@ -300,6 +304,11 @@ static void __init alive_init(void __iomem *base, unsigned int irq_start,
 	 * chip and chip data is registerd at gic_init
 	 */
 	irq_set_chained_handler(irq_alive, alive_handler);
+
+	struct irq_desc *desc = irq_to_desc(irq_alive);
+	struct irq_chip *chip = desc->irq_data.chip;
+	printk("~~~ %s() ALIVE GPIO parent irq:%u, chip name:%s\n",\
+		__func__, irq_alive, chip->name);
 }
 
 /*----------------------------------------------------------------------------
@@ -424,6 +433,7 @@ static void gpio_irq_enable(struct irq_data *d)
 	void __iomem *base = irq_data_get_irq_chip_data(d);
 	int bit = (d->irq - IRQ_GPIO_START) & 0x1F;
 	pr_debug("%s: gpio irq = %d, %s.%d\n", __func__, d->irq, VIO_NAME(d->irq), bit);
+	printk("~~~ %s() gpio irq:%d, %s.%d\n", __func__, d->irq, VIO_NAME(d->irq), bit);
 
 	/* gpio unmask : irq enable */
 	writel(readl(base + GPIO_INT_ENB) | (1<<bit), base + GPIO_INT_ENB);
@@ -435,6 +445,7 @@ static void gpio_irq_disable(struct irq_data *d)
 	void __iomem *base = irq_data_get_irq_chip_data(d);
 	int bit = (d->irq - IRQ_GPIO_START) & 0x1F;
 	pr_debug("%s: gpio irq = %d, %s.%d\n", __func__, d->irq, VIO_NAME(d->irq), bit);
+	printk("~~~ %s() gpio irq:%d, %s.%d\n", __func__, d->irq, VIO_NAME(d->irq), bit);
 
 	/* gpio mask : irq disable */
 	writel(readl(base + GPIO_INT_ENB) & ~(1<<bit), base + GPIO_INT_ENB);
@@ -465,6 +476,8 @@ static void gpio_handler(unsigned int irq, struct irq_desc *desc)
 
 	pr_debug("%s: gpio irq=%d [%s.%d], stat=0x%08x, mask=0x%08x\n",
 		__func__, phy, PIO_NAME(phy), bit, stat, mask);
+	printk("~~~ %s: gpio irq:%d [%s.%d], stat=0x%08x, mask=0x%08x\n",
+		__func__, phy, PIO_NAME(phy), bit, stat, mask);
 
 	if (-1 == bit) {
 		printk(KERN_ERR "Unknown gpio phy irq=%d, status=0x%08x, mask=0x%08x\r\n",
@@ -476,11 +489,16 @@ static void gpio_handler(unsigned int irq, struct irq_desc *desc)
 
 	/* gpio descriptor */
 	irq  = (VIO_IRQ_BASE + bit + (32 * (phy - PIO_IRQ_BASE)));	// virtual irq
-	desc = irq_desc + irq;
+	printk("~~~ %s() irq:%u, irq_desc->irq_data.irq:%u\n", \
+		__func__, irq, irq_desc->irq_data.irq);
+	/*desc = irq_desc + irq;*/ /*the global struct irq_desc irq_desc[NR_IRQS]*/
+	desc = irq_to_desc(irq);
 
 	if (desc && desc->action) {
 		/* disable irq reentrant */
 		desc->action->flags |= IRQF_DISABLED;
+		printk("~~~ %s() call generic_handle_irq_desc(), irq_desc->irq_data.irq:%u, atcion name:%s\n", \
+			__func__, desc->irq_data.irq, desc->action->name);
 		generic_handle_irq_desc(irq, desc);
 	} else {
 		printk(KERN_ERR "Error, not registered gpio interrupt=%d (%s.%d), disable !!!\n",
@@ -490,7 +508,9 @@ static void gpio_handler(unsigned int irq, struct irq_desc *desc)
 		readl(base + GPIO_INT_STATUS);	/* Guarantee */
 	}
 
+	printk("~~~ %s() write CPUI end of INT reg, irq:%u\n", __func__, irq);
 	writel_relaxed(phy, GIC_CPUI_BASE + GIC_CPU_EOI);
+
 	return;
 }
 
@@ -520,6 +540,8 @@ static void __init gpio_init(void __iomem *base, unsigned int irq_start,
 		writel(0x0, base + GPIO_INT_ENB);
 		writel(0x0, base + GPIO_INT_DET);
 
+		printk("~~~ %s() set GPIO* handler_data chained_handler\n", __func__);
+
 		/* register gpio irq handler data */
 		irq_set_handler_data(irq_gpio, base);
 
@@ -528,6 +550,11 @@ static void __init gpio_init(void __iomem *base, unsigned int irq_start,
 	 	 * chip and chip data is registerd at gic_init
 	 	 */
 		irq_set_chained_handler(irq_gpio, gpio_handler);
+
+		struct irq_desc *desc = irq_to_desc(irq_gpio);
+		struct irq_chip *chip = desc->irq_data.chip;
+		printk("~~~ %s() GPIO parent irq:%u, chip name:%s\n",\
+			__func__, irq_gpio, chip->name);
 
 		/* next */
 		irq_gpio++;

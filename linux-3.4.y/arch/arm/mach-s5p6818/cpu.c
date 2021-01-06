@@ -86,6 +86,9 @@ static void __init cpu_fixup(struct tag *tag, char **cmdline, struct meminfo *mi
 #else
 	mi->bank[0].size  = CFG_MEM_PHY_SYSTEM_SIZE + CFG_MEM_PHY_DMAZONE_SIZE;
 #endif
+
+	printk("~~~ %s() meminfo banks:%d, start:%#x size:%#x\n", __func__, \
+		mi->nr_banks, mi->bank[0].start, mi->bank[0].size);
 }
 
 #if	defined(CONFIG_SMP)
@@ -98,6 +101,8 @@ static void __init cpu_map_io(void)
 {
 	int cores = LIVE_NR_CPUS;
 
+	printk("~~~ %s()\n", __func__);
+	
 	/*
 	 * check memory map
 	 */
@@ -134,6 +139,8 @@ static void __init cpu_map_io(void)
 
 static void __init cpu_init_machine(void)
 {
+	printk("~~~ %s()\n", __func__);
+
 	/* set shutdown */
 	pm_power_off = nxp_cpu_shutdown;
 	arm_pm_restart = nxp_cpu_reset;

@@ -135,11 +135,17 @@ handle_irq_event_percpu(struct irq_desc *desc, struct irqaction *action)
 	irqreturn_t retval = IRQ_NONE;
 	unsigned int flags = 0, irq = desc->irq_data.irq;
 
+	if (irq >= IRQ_PHY_GPIOA)
+		printk("~~~ %s() irq:%d, name:%s\n", __func__, irq, desc->name);
+
 	do {
 		irqreturn_t res;
 
 		trace_irq_handler_entry(irq, action);
 		res = action->handler(irq, action->dev_id);
+		if (irq >= IRQ_PHY_GPIOA)
+			printk("~~~ %s() after call action->handler(), name:%s, res:%d\n", \
+				__func__, action->name, res);
 		trace_irq_handler_exit(irq, action, res);
 
 		if (WARN_ONCE(!irqs_disabled(),"irq %u handler %pF enabled interrupts\n",
@@ -157,6 +163,9 @@ handle_irq_event_percpu(struct irq_desc *desc, struct irqaction *action)
 				break;
 			}
 
+			if (irq >= IRQ_PHY_GPIOA)
+				printk("~~~ %s() irq_wake_thread\n", \
+					__func__);
 			irq_wake_thread(desc, action);
 
 			/* Fall through to add to randomness */
@@ -183,6 +192,11 @@ irqreturn_t handle_irq_event(struct irq_desc *desc)
 {
 	struct irqaction *action = desc->action;
 	irqreturn_t ret;
+
+	if (desc->irq_data.irq >= IRQ_PHY_GPIOA)
+		printk("~~~ %s() irq:%d, name:%s, irq_chip:%s\n", \
+			__func__, desc->irq_data.irq, desc->name, \
+			(desc->irq_data.chip)->name);
 
 	desc->istate &= ~IRQS_PENDING;
 	irqd_set(&desc->irq_data, IRQD_IRQ_INPROGRESS);

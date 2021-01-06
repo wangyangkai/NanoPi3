@@ -166,9 +166,13 @@ int irq_startup(struct irq_desc *desc, bool resend)
 	desc->depth = 0;
 
 	if (desc->irq_data.chip->irq_startup) {
+		printk("~~~ %s() irq:%u, call desc->irq_data.chip->irq_startup()\n", \
+			__func__, desc->irq_data.irq);
 		ret = desc->irq_data.chip->irq_startup(&desc->irq_data);
 		irq_state_clr_masked(desc);
 	} else {
+		printk("~~~ %s() irq:%u, call irq_enable()\n", \
+			__func__, desc->irq_data.irq);
 		irq_enable(desc);
 	}
 	if (resend)
@@ -365,6 +369,8 @@ static void cond_unmask_irq(struct irq_desc *desc)
 void
 handle_level_irq(unsigned int irq, struct irq_desc *desc)
 {
+	printk("~~~ %s() irq:%d\n", __func__, irq);
+
 	raw_spin_lock(&desc->lock);
 	mask_ack_irq(desc);
 
@@ -382,6 +388,8 @@ handle_level_irq(unsigned int irq, struct irq_desc *desc)
 	if (unlikely(!desc->action || irqd_irq_disabled(&desc->irq_data)))
 		goto out_unlock;
 
+	printk("~~~ %s() irq:%d, call handle_irq_event(), action name:%s\n", \
+		__func__, irq, desc->action->name);
 	handle_irq_event(desc);
 
 	cond_unmask_irq(desc);
@@ -414,6 +422,9 @@ static inline void preflow_handler(struct irq_desc *desc) { }
 void
 handle_fasteoi_irq(unsigned int irq, struct irq_desc *desc)
 {
+	if (irq >= IRQ_PHY_GPIOA)
+		printk("~~~ %s() irq:%d\n", __func__, irq);
+
 	raw_spin_lock(&desc->lock);
 
 	if (unlikely(irqd_irq_inprogress(&desc->irq_data)))
@@ -443,6 +454,9 @@ handle_fasteoi_irq(unsigned int irq, struct irq_desc *desc)
 		cond_unmask_irq(desc);
 
 out_eoi:
+	if (irq >= IRQ_PHY_GPIOA)
+		printk("~~~ %s() irq:%d, call chip->irq_eoi()\n", \
+		__func__, irq);
 	desc->irq_data.chip->irq_eoi(&desc->irq_data);
 out_unlock:
 	raw_spin_unlock(&desc->lock);
@@ -662,6 +676,7 @@ void
 irq_set_chip_and_handler_name(unsigned int irq, struct irq_chip *chip,
 			      irq_flow_handler_t handle, const char *name)
 {
+	/*printk("~~~ %s() irq:%d, chip name:%s\n", __func__, irq, chip->name);*/
 	irq_set_chip(irq, chip);
 	__irq_set_handler(irq, handle, 0, name);
 }

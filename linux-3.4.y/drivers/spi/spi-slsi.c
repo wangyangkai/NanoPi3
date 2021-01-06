@@ -666,7 +666,9 @@ static inline void enable_cs(struct s3c64xx_spi_driver_data *sdd,
 	}
 
 	cs = spi->controller_data;
-	cs->set_level(cs->line, spi->mode & SPI_CS_HIGH ? 1 : 0);
+	/*cs->set_level(cs->line, spi->mode & SPI_CS_HIGH ? 1 : 0);*/
+	cs->set_level(cs->line, spi->chip_select==1 ? 1 : 0);
+	/*printk("wyk->cs:%d val:%d . %s %d\n", cs->line, spi->chip_select ? 1 : 0, __FUNCTION__, __LINE__);*/
 }
 
 static int wait_for_xfer(struct s3c64xx_spi_driver_data *sdd,
@@ -761,14 +763,35 @@ static inline void disable_cs(struct s3c64xx_spi_driver_data *sdd,
 	if (sdd->tgl_spi == spi)
 		sdd->tgl_spi = NULL;
 
-	cs->set_level(cs->line, spi->mode & SPI_CS_HIGH ? 0 : 1);
+	/*cs->set_level(cs->line, spi->mode & SPI_CS_HIGH ? 0 : 1);*/
+	cs->set_level(cs->line, spi->chip_select ? 1 : 1);
+	/*printk("wyk->cs:%d val:%d . %s %d\n", cs->line, spi->chip_select ? 1 : 1, __FUNCTION__, __LINE__);*/
 }
+
+/* slsi soc headers */
+#include <mach/platform.h>
+#include <mach/devices.h>
+#include <mach/soc.h>
+#include <linux/vr/vr_utgard.h>
+
+#include <mach/slsi-spi.h>
+#include <linux/gpio.h>
+#include <linux/spi/spi.h>
+
+static  const int reset[3][2] = {
+	{ RESET_ID_SSP0_P, RESET_ID_SSP0 },
+	{ RESET_ID_SSP1_P, RESET_ID_SSP1 },
+	{ RESET_ID_SSP2_P, RESET_ID_SSP2 },
+};
 
 static void s3c64xx_spi_config(struct s3c64xx_spi_driver_data *sdd,struct s3c64xx_spi_csinfo *cs )
 {
 	struct s3c64xx_spi_info *sci = sdd->cntrlr_info;
 	void __iomem *regs = sdd->regs;
 	u32 val;
+
+	char name[10] = {0};
+	struct clk *clk ;
 
 	/* Disable Clock */
 	if (sci->clk_from_cmu) {
@@ -819,11 +842,24 @@ static void s3c64xx_spi_config(struct s3c64xx_spi_driver_data *sdd,struct s3c64x
 	writel(val, regs + S3C64XX_SPI_MODE_CFG);
 
 	if (sci->clk_from_cmu) {
+
+#if 0		
 		/* Configure Clock */
 		/* There is half-multiplier before the SPI */
 		clk_set_rate(sdd->src_clk, sdd->cur_speed * 2);
 		/* Enable Clock */
 		clk_enable(sdd->src_clk);
+#endif
+		sprintf(name,"nxp-spi.%d",(unsigned char)0);
+
+		clk = clk_get(NULL,name);
+		clk_set_rate(clk,sdd->cur_speed * 2);
+
+		nxp_soc_peri_reset_enter(reset[0][0]);
+		nxp_soc_peri_reset_enter(reset[0][1]);
+		nxp_soc_peri_reset_exit(reset[0][0]);
+		nxp_soc_peri_reset_exit(reset[0][1]);
+		clk_enable(clk);
 	} else {
 		/* Configure Clock */
 		val = readl(regs + S3C64XX_SPI_CLK_CFG);
@@ -831,6 +867,8 @@ static void s3c64xx_spi_config(struct s3c64xx_spi_driver_data *sdd,struct s3c64x
 		val |= ((clk_get_rate(sdd->src_clk) / sdd->cur_speed / 2 - 1)
 				& S3C64XX_SPI_PSR_MASK);
 		writel(val, regs + S3C64XX_SPI_CLK_CFG);
+
+		/*printk("wyk->clk:%d val:%d . %s %d\n", clk_get_rate(sdd->src_clk), val, __FUNCTION__, __LINE__);*/
 
 		/* Enable Clock */
 		val = readl(regs + S3C64XX_SPI_CLK_CFG);

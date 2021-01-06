@@ -783,14 +783,14 @@ struct s3c64xx_spi_info s3c64xx_spi0_pdata = {
 	.rx_lvl_offset  = 15,
 	//.rx_lvl_offset  = 0x1ff,
 	.high_speed = 1,
-	.clk_from_cmu   = false,//true,
+	.clk_from_cmu   = true,//true,
 	.tx_st_done = 25,
-	.num_cs = 1,
+	.num_cs = 3,/*.num_cd = 1 change by wyk */
 	.src_clk_nr = 0,
 	.cfg_gpio = s3c64xx_spi0_cfg_gpio,
 	.spi_init = spi_init,
 /* bok add */
-	.enable_dma     = 1,
+	.enable_dma     = 0,// 1
 	.dma_filter     = pl08x_filter_id,
 	.dma_rx_param   = (void *)DMA_PERIPHERAL_NAME_SSP0_RX,
 	.dma_tx_param   = (void *)DMA_PERIPHERAL_NAME_SSP0_TX,
@@ -836,7 +836,7 @@ struct s3c64xx_spi_info s3c64xx_spi1_pdata = {
 	.spi_init = spi_init,
 /* bok add */
 	.bus_id = 1,
-	.enable_dma     = 1,
+	.enable_dma     =0,// 1
 	.dma_filter     = pl08x_filter_id,
 	.dma_rx_param   = (void *)DMA_PERIPHERAL_NAME_SSP1_RX,
 	.dma_tx_param   = (void *)DMA_PERIPHERAL_NAME_SSP1_TX,

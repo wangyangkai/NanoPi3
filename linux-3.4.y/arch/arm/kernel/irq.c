@@ -122,6 +122,8 @@ void set_irq_flags(unsigned int irq, unsigned int iflags)
 
 void __init init_IRQ(void)
 {
+	printk("~~~ %s() call machine_desc->init_irq()\n", \
+		__func__);
 	machine_desc->init_irq();
 }
 

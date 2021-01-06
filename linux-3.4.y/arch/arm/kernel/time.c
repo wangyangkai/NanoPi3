@@ -148,5 +148,6 @@ void __init time_init(void)
 	system_timer = machine_desc->timer;
 	system_timer->init();
 	sched_clock_postinit();
+	printk("~~~ %s() done\n", __func__);
 }
 

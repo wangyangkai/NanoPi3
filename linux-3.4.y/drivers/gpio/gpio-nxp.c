@@ -142,6 +142,9 @@ static int nxp_gpio_to_irq( struct gpio_chip *chip , unsigned offset )
 	struct nxp_gpio *gpio = GET_GPIO(chip);
 	unsigned int io = gpio->index * GPIO_NUM_PER_BANK + offset;
 
+	/*printk("~~~ %s() offset:%d, io:%d, irq:%d\n", __func__, \
+			offset, io, io + IRQ_GPIO_START);*/
+
 	return (io + IRQ_GPIO_START);
 }
 

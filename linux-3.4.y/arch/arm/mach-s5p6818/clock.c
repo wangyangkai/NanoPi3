@@ -558,9 +558,13 @@ static long core_set_rate(struct clk *clk, long rate)
 static void core_rate_init(void)
 {
 	int pll, i;
+	int rate;
 
-	for (i = 0; CORE_HZ_SIZE > i; i++)
-		core_update_rate(i);
+	for (i = 0; CORE_HZ_SIZE > i; i++) {
+		rate = core_update_rate(i);
+		/*printk("~~~ %s() core clk:%d, rate %d(MHz)\n", __func__, \
+			i, rate / 1000000);*/
+	}
 
 	/* CPU : FCLK, HCLK */
 	pll = pll_get_dvo(PLL_DIV_CPUG0);
@@ -1058,6 +1062,9 @@ void __init nxp_cpu_clock_init(void)
 	struct clk *clk = NULL;
 	int i = 0, n = 0;
 
+	printk("~~~ %s() CLK_CORE_NUM:%d, CLK_PERI_NUM:%d, CLK_LINK_NUM:%d\n", \
+		__func__, CLK_CORE_NUM, CLK_PERI_NUM, CLK_LINK_NUM);
+
 	core_rate_init();
 
 	for (i = 0; (CLK_CORE_NUM+CLK_PERI_NUM) > i; i++, cdev++) {
@@ -1126,7 +1133,7 @@ void nxp_cpu_clock_print(void)
 {
 	int pll, cpu;
 
-	core_rate_init();
+	/*core_rate_init();*/
 
 	printk("PLL : [0] = %10lu, [1] = %10lu, [2] = %10lu, [3] = %10lu\n",
 		core_hz.pll[0], core_hz.pll[1], core_hz.pll[2], core_hz.pll[3]);

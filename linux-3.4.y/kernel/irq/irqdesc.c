@@ -259,6 +259,8 @@ int __init early_irq_init(void)
 
 	desc = irq_desc;
 	count = ARRAY_SIZE(irq_desc);
+	printk("~~~ %s() irq_desc count:%d, call desc_set_defaults()\n", \
+				__func__, count);
 
 	for (i = 0; i < count; i++) {
 		desc[i].kstat_irqs = alloc_percpu(unsigned int);
@@ -285,6 +287,8 @@ static inline int alloc_descs(unsigned int start, unsigned int cnt, int node,
 {
 	u32 i;
 
+	printk("~~~ %s() start:%d, cnt:%d\n", __func__, start, cnt);
+
 	for (i = 0; i < cnt; i++) {
 		struct irq_desc *desc = irq_to_desc(start + i);
 
@@ -308,6 +312,10 @@ static int irq_expand_nr_irqs(unsigned int nr)
 int generic_handle_irq(unsigned int irq)
 {
 	struct irq_desc *desc = irq_to_desc(irq);
+
+	if (irq >= IRQ_PHY_GPIOA)
+		printk("~~~ %s() irq:%u, irq_desc->irq_data.irq:%u\n", \
+			__func__, irq, irq_desc->irq_data.irq);
 
 	if (!desc)
 		return -EINVAL;

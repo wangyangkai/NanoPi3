@@ -59,14 +59,6 @@ static void s702_gpio_init(void)
 		nxp_soc_gpio_set_io_drv(PAD_GPIO_A + i, 1);
 }
 
-static void s430_gpio_init(void)
-{
-	int  i;
-
-	for (i = 0; i < 28; i++)
-		nxp_soc_gpio_set_io_drv(PAD_GPIO_A + i, 1);
-}
-
 static void hd101_gpio_init(void)
 {
 	int i;
@@ -88,33 +80,6 @@ static void hd700_gpio_init(void)
 
 
 /* NXP display configs for supported LCD */
-
-static struct nxp_lcd wxga_hd900 = {
-	.width = 1280,
-	.height = 800,
-	.p_width = 151,
-	.p_height = 94,
-	.bpp = 24,
-	.freq = 60,
-
-	.timing = {
-		.h_fp = 33,
-		.h_bp = 33,
-		.h_sw = 33,
-		.v_fp =  4,
-		.v_fpe = 1,
-		.v_bp =  4,
-		.v_bpe = 1,
-		.v_sw =  4,
-	},
-	.polarity = {
-		.rise_vclk = 0,
-		.inv_hsync = 0,
-		.inv_vsync = 1,
-		.inv_vden = 0,
-	},
-	.gpio_init = hd700_gpio_init,
-};
 
 static struct nxp_lcd wxga_hd700 = {
 	.width = 800,
@@ -225,32 +190,6 @@ static struct nxp_lcd wvga_s70d = {
 };
 
 #ifndef CONFIG_ANDROID
-static struct nxp_lcd hvga_h43 = {
-	.width = 480,
-	.height = 272,
-	.p_width = 96,
-	.p_height = 54,
-	.bpp = 32,
-	.freq = 65,
-
-	.timing = {
-		.h_fp =  5,
-		.h_bp = 40,
-		.h_sw =  2,
-		.v_fp =  8,
-		.v_fpe = 1,
-		.v_bp =  8,
-		.v_bpe = 1,
-		.v_sw =  2,
-	},
-	.polarity = {
-		.rise_vclk = 0,
-		.inv_hsync = 1,
-		.inv_vsync = 1,
-		.inv_vden = 0,
-	},
-};
-
 static struct nxp_lcd hvga_p43 = {
 	.width = 480,
 	.height = 272,
@@ -304,33 +243,6 @@ static struct nxp_lcd qvga_w35 = {
 };
 #endif
 
-static struct nxp_lcd wvga_w500 = {
-	.width = 800,
-	.height = 480,
-	.p_width = 108,
-	.p_height = 64,
-	.bpp = 24,
-	.freq = 60,
-
-	.timing = {
-		.h_fp = 80,
-		.h_bp = 36,
-		.h_sw = 10,
-		.v_fp = 22,
-		.v_fpe = 1,
-		.v_bp = 15,
-		.v_bpe = 1,
-		.v_sw = 8,
-	},
-	.polarity = {
-		.rise_vclk = 0,
-		.inv_hsync = 1,
-		.inv_vsync = 1,
-		.inv_vden = 0,
-	},
-	.gpio_init = s70_gpio_init,
-};
-
 static struct nxp_lcd wvga_w50 = {
 	.width= 800,
 	.height = 480,
@@ -355,33 +267,6 @@ static struct nxp_lcd wvga_w50 = {
 		.inv_vsync = 1,
 		.inv_vden = 0,
 	},
-};
-
-static struct nxp_lcd wvga_s430 = {
-	.width= 480,
-	.height = 800,
-	.p_width = 108,
-	.p_height = 64,
-	.bpp = 24,
-	.freq = 60,
-
-	.timing = {
-		.h_fp = 64,
-		.h_bp = 0,
-		.h_sw = 16,
-		.v_fp = 32,
-		.v_fpe = 1,
-		.v_bp = 0,
-		.v_bpe = 1,
-		.v_sw = 16,
-	},
-	.polarity = {
-		.rise_vclk = 1,
-		.inv_hsync = 1,
-		.inv_vsync = 1,
-		.inv_vden = 0,
-	},
-	.gpio_init = s430_gpio_init,
 };
 
 static struct nxp_lcd wsvga_w101 = {
@@ -638,22 +523,14 @@ static struct {
 	int ctp;
 } nanopi2_lcd_config[] = {
 	{ "HD101",	&wxga_hd101, 1 },
-	{ "HD101B",	&wxga_hd101, CTP_GOODIX  },
 	{ "HD700",	&wxga_hd700, 1 },
-	{ "HD900",	&wxga_hd900, CTP_ST1572  },
-	{ "HD702",	&wxga_hd700, CTP_GOODIX  },
-	{ "H70",	&wxga_hd700, 0 },
+	{ "HD701",	&wxga_hd700, 1 },
 	{ "S70",	&wvga_s70,   1 },
-	{ "S701",	&wvga_s70,   CTP_GOODIX  },
 	{ "S702",	&wvga_s702,  1 },
 	{ "S70D",	&wvga_s70d,  0 },
 	{ "X710",	&wsvga_x710, CTP_ITE7260 },
-	{ "S430",	&wvga_s430,  CTP_HIMAX   },
-	{ "K101",	&wxga_hd101, CTP_FT5X06  },
-	{ "W500",	&wvga_w500,  CTP_GOODIX  },
 
 #ifndef CONFIG_ANDROID
-	{ "H43",	&hvga_h43,   0 },
 	{ "P43",	&hvga_p43,   0 },
 	{ "W35",	&qvga_w35,   0 },
 #endif

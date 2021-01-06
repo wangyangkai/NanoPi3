@@ -459,6 +459,8 @@ irq_set_handler(unsigned int irq, irq_flow_handler_t handle)
 static inline void
 irq_set_chained_handler(unsigned int irq, irq_flow_handler_t handle)
 {
+	printk("~~~ %s() irq:%u, is_chained:%d\n", \
+		__func__, irq, 1);
 	__irq_set_handler(irq, handle, 1, NULL);
 }
 

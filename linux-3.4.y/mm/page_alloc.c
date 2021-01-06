@@ -3639,6 +3639,9 @@ void __meminit memmap_init_zone(unsigned long size, int nid, unsigned long zone,
 	unsigned long pfn;
 	struct zone *z;
 
+	printk("%s() size:%#x, nid:%d, zone:%#x, start_pfn:%#x\n", __func__, \
+		size, nid, zone, start_pfn);
+
 	if (highest_memmap_pfn < end_pfn - 1)
 		highest_memmap_pfn = end_pfn - 1;
 
@@ -3894,7 +3897,7 @@ static __meminit void zone_pcp_init(struct zone *zone)
 	zone->pageset = &boot_pageset;
 
 	if (zone->present_pages)
-		printk(KERN_DEBUG "  %s zone: %lu pages, LIFO batch:%u\n",
+		printk(KERN_INFO "  %s zone: %lu pages, LIFO batch:%u\n",
 			zone->name, zone->present_pages,
 					 zone_batchsize(zone));
 }
@@ -4217,7 +4220,7 @@ static void __meminit calculate_node_totalpages(struct pglist_data *pgdat,
 			zone_absent_pages_in_node(pgdat->node_id, i,
 								zholes_size);
 	pgdat->node_present_pages = realtotalpages;
-	printk(KERN_DEBUG "On node %d totalpages: %lu\n", pgdat->node_id,
+	printk(KERN_INFO "On node %d totalpages: %lu\n", pgdat->node_id,
 							realtotalpages);
 }
 

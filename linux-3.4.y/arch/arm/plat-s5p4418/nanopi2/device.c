@@ -126,7 +126,7 @@ const u8 g_DispBusSI[3] = {
  */
 #if defined(CONFIG_ARM_NXP_CPUFREQ)
 static unsigned long dfs_freq_table[][2] = {
-	{ 1400000, 1260000, },
+	{ 1400000, 1280000, },
 	{ 1200000, 1200000, },
 	{ 1000000, 1140000, },
 	{  800000, 1100000, },
@@ -588,35 +588,6 @@ static struct i2c_board_info __initdata ft5x0x_i2c_bdi = {
 };
 #endif
 
-#if defined(CONFIG_TOUCHSCREEN_GOODIX)
-#include <linux/platform_data/goodix_touch.h>
-
-#define	GOODIX_I2C_BUS		(2)
-
-static struct goodix_i2c_platform_data goodix_pdata = {
-	.gpio_irq		= CFG_IO_TOUCH_IRQ,
-	.irq_cfg		= 0,
-	.gpio_reset		= -1,
-	.screen_max_x	= 1280,
-	.screen_max_y	= 800,
-	.pressure_max	= 255,
-};
-
-static struct i2c_board_info __initdata goodix_i2c_bdi = {
-	I2C_BOARD_INFO("Goodix-TS", 0x5d),
-	.platform_data = &goodix_pdata,
-};
-#endif
-
-#if defined(CONFIG_TOUCHSCREEN_HIMAX)
-#define	HIMAX_I2C_BUS		(2)
-
-static struct i2c_board_info __initdata himax_i2c_bdi = {
-	I2C_BOARD_INFO("hx8528-a", (0x90 >> 1)),
-	.irq = PB_PIO_IRQ(CFG_IO_TOUCH_IRQ),
-};
-#endif
-
 #if defined(CONFIG_TOUCHSCREEN_IT7260)
 #define	IT7260_I2C_BUS		(2)
 
@@ -626,23 +597,8 @@ static struct i2c_board_info __initdata it7260_i2c_bdi = {
 };
 #endif
 
-#if defined(CONFIG_TOUCHSCREEN_ST1572)
-#define	ST1572_I2C_BUS		(2)
-
-static struct i2c_board_info __initdata st1572_i2c_bdi = {
-	I2C_BOARD_INFO("st1572-ts", (0xAA>>1)),
-	.irq = PB_PIO_IRQ(CFG_IO_TOUCH_IRQ),
-};
-#endif
-
 #if defined(CONFIG_TOUCHSCREEN_1WIRE)
 #include <linux/platform_data/touchscreen-one-wire.h>
-#define	ONEWIRE_I2C_BUS		(2)
-
-static struct i2c_board_info __initdata onewire_i2c_bdi = {
-	I2C_BOARD_INFO("ONEWIRE", (0x5e>>1)),
-	.irq = PB_PIO_IRQ(CFG_IO_TOUCH_IRQ),
-};
 
 static struct ts_onewire_platform_data onewire_ts_pdata = {
 	.timer_irq	= IRQ_PHY_PWM_INT3,
@@ -695,13 +651,6 @@ static struct i2c_board_info __initdata ds1307_i2c_bdi = {
 
 static struct i2c_board_info __initdata pcf8591_i2c_bdi = {
 	I2C_BOARD_INFO("pcf8591", 0x48),
-};
-#endif
-
-#if defined(CONFIG_MATRIX_ADC)
-static struct platform_device iio_adc_device = {
-	.name		= "iio_adc",
-	.id			= -1,
 };
 #endif
 
@@ -874,50 +823,6 @@ static struct platform_device i2c_device_ch3 = {
 static struct platform_device *i2c_devices[] = {
 	&i2c_device_ch3,
 };
-
-#if defined(CONFIG_REGULATOR_SPU1705)
-#include <linux/regulator/spu1705.h>
-
-static struct regulator_consumer_supply dcdc1_supply[] = {
-	{
-		.supply	= "vdd_arm_1.3V",
-	},
-};
-
-static struct regulator_init_data spu1705_dcdc1_data = {
-	.constraints	= {
-		.name		= "DCDC1",
-		.min_uV		=  905000,
-		.max_uV		= 1265000,
-		.always_on	= 1,
-		.valid_ops_mask	= REGULATOR_CHANGE_VOLTAGE,
-		.state_mem	= {
-			.uV			= 1200000,
-			.mode		= REGULATOR_MODE_STANDBY,
-			.enabled	= 0,
-		},
-	},
-	.num_consumer_supplies	= ARRAY_SIZE(dcdc1_supply),
-	.consumer_supplies	= dcdc1_supply,
-};
-
-static struct spu1705_regulator_subdev spu1705_regulators[] = {
-	{ SPU1705_DCDC1, &spu1705_dcdc1_data, },
-};
-
-struct spu1705_platform_data spu1705_platform_data = {
-	.num_regulators	= ARRAY_SIZE(spu1705_regulators),
-	.regulators		= spu1705_regulators,
-};
-#endif
-
-static struct i2c_board_info __initdata spu1705_i2c_bdi = {
-	I2C_BOARD_INFO("fe-pmu", (0x5a>>1)),
-	.irq = -1,
-#if defined(CONFIG_REGULATOR_SPU1705)
-	.platform_data = &spu1705_platform_data,
-#endif
-};
 #endif /* CONFIG_I2C_NXP_PORT3 */
 
 /*------------------------------------------------------------------------------
@@ -958,13 +863,6 @@ static struct platform_device fixed_supply_dummy_device = {
 	},
 };
 #endif /* CONFIG_REGULATOR_FIXED_VOLTAGE */
-
-#if defined(CONFIG_BATTERY_SAMSUNG)
-static struct platform_device samsung_device_battery = {
-	.name		= "samsung-fake-battery",
-	.id		= -1,
-};
-#endif
 
 /*------------------------------------------------------------------------------
  * v4l2 platform device
@@ -1767,7 +1665,6 @@ int board_get_revision(void)
 {
 	return system_rev;
 }
-EXPORT_SYMBOL(board_get_revision);
 
 static void __init board_hwrev_init(void)
 {
@@ -1787,19 +1684,6 @@ static void __init board_hwrev_init(void)
 	system_serial_low  = 0xA5110622;
 
 	printk("plat: board revision %x\n", system_rev);
-}
-
-static void __init board_usbhub_init(void)
-{
-#if defined(CONFIG_USB_EHCI_SYNOPSYS) || defined(CONFIG_USB_OHCI_SYNOPSYS)
-#define CFG_IO_USBHUB_RST		(PAD_GPIO_C + 0)
-
-	printk("plat: reset USB hub\n");
-	nxp_soc_gpio_set_out_value(CFG_IO_USBHUB_RST, 0);
-	nxp_soc_gpio_set_io_dir(CFG_IO_USBHUB_RST, 1);
-	udelay(100);
-	nxp_soc_gpio_set_out_value(CFG_IO_USBHUB_RST, 1);
-#endif
 }
 
 /*------------------------------------------------------------------------------
@@ -1834,13 +1718,9 @@ void __init nxp_board_devices_register(void)
 #endif
 	}
 
-	board_usbhub_init();
-
 #if defined(CONFIG_ARM_NXP_CPUFREQ)
-	if (nxp_soc_gpio_get_in_value(CFG_IO_HW_PCBD)) {
+	if (nxp_soc_gpio_get_in_value(CFG_IO_HW_PCBD))
 		dfs_plat_data.fixed_voltage = 0;
-		printk("plat: DVFS enabled\n");
-	}
 	printk("plat: add dynamic frequency (pll.%d)\n", dfs_plat_data.pll_dev);
 	platform_device_register(&dfs_plat_device);
 #endif
@@ -1904,15 +1784,9 @@ void __init nxp_board_devices_register(void)
 #endif
 	} else {
 #if defined(CONFIG_I2C_NXP_PORT3)
-		i2c_register_board_info(3, &spu1705_i2c_bdi, 1);
 		platform_add_devices(i2c_devices, ARRAY_SIZE(i2c_devices));
 #endif
 	}
-
-#if defined(CONFIG_BATTERY_SAMSUNG)
-	printk("plat: add device fake-battery\n");
-	platform_device_register(&samsung_device_battery);
-#endif
 
 #if defined(CONFIG_SND_SPDIF_TRANSCIEVER) || defined(CONFIG_SND_SPDIF_TRANSCIEVER_MODULE)
 	printk("plat: add device spdif playback\n");
@@ -1955,38 +1829,14 @@ void __init nxp_board_devices_register(void)
 	i2c_register_board_info(FT5X0X_I2C_BUS, &ft5x0x_i2c_bdi, 1);
 #endif
 
-#if defined(CONFIG_TOUCHSCREEN_GOODIX)
-	printk("plat: add touch(goodix) device\n");
-	goodix_pdata.screen_max_x = lcd->width;
-	goodix_pdata.screen_max_y = lcd->height;
-	i2c_register_board_info(GOODIX_I2C_BUS, &goodix_i2c_bdi, 1);
-	printk("plat: goodix: irq=%d (%d)\n", PB_PIO_IRQ(CFG_IO_TOUCH_IRQ), CFG_IO_TOUCH_IRQ);
-#endif
-
-#if defined(CONFIG_TOUCHSCREEN_HIMAX)
-	printk("plat: add touch(himax) device\n");
-	i2c_register_board_info(HIMAX_I2C_BUS, &himax_i2c_bdi, 1);
-#endif
-
 #if defined(CONFIG_TOUCHSCREEN_IT7260)
 	printk("plat: add touch(it7260) device\n");
 	i2c_register_board_info(IT7260_I2C_BUS, &it7260_i2c_bdi, 1);
 #endif
 
-#if defined(CONFIG_TOUCHSCREEN_ST1572)
-	printk("plat: add touch(st1572) device\n");
-	i2c_register_board_info(ST1572_I2C_BUS, &st1572_i2c_bdi, 1);
-#endif
-
 #if defined(CONFIG_TOUCHSCREEN_1WIRE)
 	printk("plat: add onewire ts device\n");
-	i2c_register_board_info(ONEWIRE_I2C_BUS, &onewire_i2c_bdi, 1);
 	platform_device_register(&onewire_device);
-#endif
-
-#if defined(CONFIG_MATRIX_ADC)
-	printk("plat: add iio adc device\n");
-	platform_device_register(&iio_adc_device);
 #endif
 
 #if defined(CONFIG_SENSORS_MMA865X) || defined(CONFIG_SENSORS_MMA865X_MODULE)

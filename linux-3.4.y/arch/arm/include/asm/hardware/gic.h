@@ -49,6 +49,7 @@ void gic_raise_softirq(const struct cpumask *mask, unsigned int irq);
 static inline void gic_init(unsigned int nr, int start,
 			    void __iomem *dist , void __iomem *cpu)
 {
+	printk("~~~ %s() call gic_init_bases()\n", __func__);
 	gic_init_bases(nr, start, dist, cpu, 0, NULL);
 }
 

@@ -356,6 +356,8 @@ void __disable_irq(struct irq_desc *desc, unsigned int irq, bool suspend)
 		desc->istate |= IRQS_SUSPENDED;
 	}
 
+	/*printk("~~~ %s() irq:%d, desc->depth:%d\n", __func__, \
+		irq, desc->depth);*/
 	if (!desc->depth++)
 		irq_disable(desc);
 }
@@ -422,6 +424,8 @@ void __enable_irq(struct irq_desc *desc, unsigned int irq, bool resume)
 		desc->istate &= ~IRQS_SUSPENDED;
 	}
 
+	printk("~~~ %s() do, irq:%d, desc->depth:%d\n", __func__, \
+			irq, desc->depth);
 	switch (desc->depth) {
 	case 0:
  err_out:
@@ -439,6 +443,9 @@ void __enable_irq(struct irq_desc *desc, unsigned int irq, bool resume)
 	default:
 		desc->depth--;
 	}
+
+	printk("~~~ %s() done, irq:%d, desc->depth:%d\n", __func__, \
+		irq, desc->depth);
 }
 
 /**
@@ -1060,11 +1067,17 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
 		if (new->flags & IRQF_ONESHOT)
 			desc->istate |= IRQS_ONESHOT;
 
-		if (irq_settings_can_autoenable(desc))
+		if (irq_settings_can_autoenable(desc)) {
+			printk("~~~ %s() irq:%u, desc->depth:%d, call irq_startup()\n", \
+				__func__, irq, desc->depth);
 			irq_startup(desc, true);
-		else
+			/*printk("~~~ %s() irq:%u, desc->depth:%d\n", \
+				__func__, irq, desc->depth);*/
+		} else {
 			/* Undo nested disables: */
 			desc->depth = 1;
+			printk("~~~ %s() irq:%d, set desc->depth = 1\n", __func__, irq);
+		}
 
 		/* Exclude IRQ from balancing if requested */
 		if (new->flags & IRQF_NOBALANCING) {
@@ -1412,6 +1425,7 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
 		enable_irq(irq);
 	}
 #endif
+
 	return retval;
 }
 EXPORT_SYMBOL(request_threaded_irq);

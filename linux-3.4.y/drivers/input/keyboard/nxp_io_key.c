@@ -32,9 +32,7 @@
 #include <mach/platform.h>
 #include <mach/devices.h>
 
-/*
 #define pr_debug(msg...)		printk(msg)
-*/
 
 #define	KEY_STAT_PRESS			(0)
 #define	KEY_STAT_RELEASE		(1)
@@ -110,6 +108,8 @@ static void nxp_key_event_wq(struct work_struct *work)
 static irqreturn_t nxp_key_irqhnd(int irqno, void *dev_id)
 {
 	struct key_code *code = dev_id;
+
+	printk("~~~ %s() irqno:%d\n", __func__, irqno);
 
 	queue_delayed_work(code->kcode_wq,
 				&code->kcode_work, DELAY_WORK_JIFFIES);
@@ -258,12 +258,26 @@ static int nxp_key_probe(struct platform_device *pdev)
     	   goto err_irq;
 	    }
 
+		printk("~~~ %s() gpio:%d, irqno:%d, call request_irq()\n", \
+			__func__, code->io, gpio_to_irq(code->io));
 		ret = request_irq(gpio_to_irq(code->io), nxp_key_irqhnd,
 					(IRQF_SHARED | IRQ_TYPE_EDGE_BOTH), pdev->name, code);
 		if (ret) {
 			pr_err("fail, gpio[%d] %s request irq...\n", code->io, pdev->name);
 			goto err_irq;
 		}
+		/*printk("~~~ %s() gpio:%d, irqno:%d, call disable_irq()\n", \
+			__func__, code->io, gpio_to_irq(code->io));
+		disable_irq(gpio_to_irq(code->io));
+		printk("~~~ %s() gpio:%d, irqno:%d, call enable_irq()\n", \
+			__func__, code->io, gpio_to_irq(code->io));	
+		enable_irq(gpio_to_irq(code->io));
+		printk("~~~ %s() gpio:%d, irqno:%d, call disable_irq()\n", \
+			__func__, code->io, gpio_to_irq(code->io));
+		disable_irq(gpio_to_irq(code->io));
+		printk("~~~ %s() gpio:%d, irqno:%d, call enable_irq()\n", \
+			__func__, code->io, gpio_to_irq(code->io));	
+		enable_irq(gpio_to_irq(code->io));*/
 
 		__set_bit(code->keycode, input->keybit);
 		INIT_DELAYED_WORK(&code->kcode_work, nxp_key_event_wq);
