@@ -1388,7 +1388,7 @@ void __init nxp_cpu_devs_register(void)
 #endif
 
 #if defined(CONFIG_SND_NXP_I2S) || defined(CONFIG_SND_NXP_I2S_MODULE)
-	printk("mach: add device i2s (array:%d) \n", ARRAY_SIZE(i2s_devices));
+	printk("+++ %s() mach: add device i2s (array:%d) \n", __func__, ARRAY_SIZE(i2s_devices));
 	platform_add_devices(i2s_devices, ARRAY_SIZE(i2s_devices));
 #endif
 

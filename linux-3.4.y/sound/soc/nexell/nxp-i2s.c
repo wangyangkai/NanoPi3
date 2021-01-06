@@ -1070,6 +1070,8 @@ static __devinit int nxp_i2s_probe(struct platform_device *pdev)
 	if (ret)
 		goto err_out;
 
+	printk("+++ %s() call snd_soc_register_dai() dev_name:%s, channel id:%d\n", \
+		__func__, dev_name(&pdev->dev), par->channel);
 	ret = snd_soc_register_dai(&pdev->dev, &i2s_dai_driver);
 	if (ret) {
         printk(KERN_ERR "fail, %s snd_soc_register_dai ...\n", pdev->name);

@@ -344,6 +344,16 @@ static int es8316_probe(struct platform_device *pdev)
 	gpio_direction_output(AUDIO_AMP_POWER, 0);
 #endif
 	card->dev = &pdev->dev;
+	printk("+++ %s() call snd_soc_register_card() card->name:%s\n", \
+		__func__, card->name);
+	printk("+++ %s() Digital Audio Interface link:\n"
+" cpu_dai_name:%s\n platform_name:%s\n codec_name:%s\n codec_dai_name:%s\n", \
+	__func__, \
+	card->dai_link->cpu_dai_name, \
+	card->dai_link->platform_name, \
+	card->dai_link->codec_name, \
+	card->dai_link->codec_dai_name);
+
 	ret = snd_soc_register_card(card);
 	if (ret) {
 		dev_err(&pdev->dev, "snd_soc_register_card() failed: %d\n", ret);

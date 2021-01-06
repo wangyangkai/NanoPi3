@@ -1385,6 +1385,8 @@ static int es8316_i2c_probe(struct i2c_client *i2c,
 		return ret;
 	}
 #endif
+	printk("+++ %s() call snd_soc_register_codec(), codec dev:%s, codec drv:%s, dai drv:%s\n", \
+		__func__, dev_name(&i2c->dev), i2c->dev.driver->name, es8316_dai.name);
 	ret =  snd_soc_register_codec(&i2c->dev, &soc_codec_dev_es8316,
 	     &es8316_dai,1);//ARRAY_SIZE(es8316_dai));
 	if (ret < 0) {

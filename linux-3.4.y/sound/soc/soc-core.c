@@ -880,6 +880,14 @@ out:
 	if (rtd->codec && rtd->codec_dai && rtd->platform && rtd->cpu_dai) {
 		rtd->complete = 1;
 		card->num_rtd++;
+
+		printk("+++ %s() mark rtd as complete if we found all 4 of our client devices\n"\
+			"cpu_dai_name:%s\n platform_name:%s\n codec_name:%s\n codec_dai_name:%s\n", \
+		__func__, \
+			rtd->cpu_dai->name, \
+			rtd->platform->name, \
+			rtd->codec->name, \
+			rtd->codec_dai->name);
 	}
 	return 1;
 }
@@ -3126,6 +3134,8 @@ int snd_soc_register_card(struct snd_soc_card *card)
 	mutex_init(&card->dapm_mutex);
 
 	mutex_lock(&client_mutex);
+	printk("+++ %s() list_add card_list, card->name:%s\n", \
+		__func__, card->name);
 	list_add(&card->list, &card_list);
 	snd_soc_instantiate_cards();
 	mutex_unlock(&client_mutex);
@@ -3243,6 +3253,8 @@ int snd_soc_register_dai(struct device *dev,
 		dai->driver->ops = &null_dai_ops;
 
 	mutex_lock(&client_mutex);
+	printk("+++ %s() list_add dai_list, dai->name:%s\n", \
+		__func__, dai->name);
 	list_add(&dai->list, &dai_list);
 	snd_soc_instantiate_cards();
 	mutex_unlock(&client_mutex);
@@ -3319,6 +3331,8 @@ int snd_soc_register_dais(struct device *dev,
 			dai->driver->ops = &null_dai_ops;
 
 		mutex_lock(&client_mutex);
+		printk("+++ %s() list_add dai_list, dai->name:%s\n", \
+			__func__, dai->name);
 		list_add(&dai->list, &dai_list);
 		mutex_unlock(&client_mutex);
 
@@ -3384,6 +3398,8 @@ int snd_soc_register_platform(struct device *dev,
 	mutex_init(&platform->mutex);
 
 	mutex_lock(&client_mutex);
+	printk("+++ %s() list_add platform_list, platform->name:%s\n", \
+		__func__, platform->name);
 	list_add(&platform->list, &platform_list);
 	snd_soc_instantiate_cards();
 	mutex_unlock(&client_mutex);
@@ -3543,6 +3559,8 @@ int snd_soc_register_codec(struct device *dev,
 	}
 
 	mutex_lock(&client_mutex);
+	printk("+++ %s() list_add codec_list, codec->name:%s\n", \
+		__func__, codec->name);
 	list_add(&codec->list, &codec_list);
 	snd_soc_instantiate_cards();
 	mutex_unlock(&client_mutex);

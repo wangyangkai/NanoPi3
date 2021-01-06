@@ -562,8 +562,8 @@ static void core_rate_init(void)
 
 	for (i = 0; CORE_HZ_SIZE > i; i++) {
 		rate = core_update_rate(i);
-		/*printk("~~~ %s() core clk:%d, rate %d(MHz)\n", __func__, \
-			i, rate / 1000000);*/
+		printk("~~~ %s() core clk:%d, rate %d(MHz)\n", __func__, \
+			i, rate / 1000000);
 	}
 
 	/* CPU : FCLK, HCLK */

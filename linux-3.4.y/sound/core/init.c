@@ -204,6 +204,8 @@ int snd_card_create(int idx, const char *xid,
 		snd_ecards_limit = idx + 1; /* increase the limit */
 	mutex_unlock(&snd_card_mutex);
 	card->number = idx;
+	printk("+++ %s() card->longname:%s, card->number:%d\n", \
+		__func__, card->longname, card->number);
 	card->module = module;
 	INIT_LIST_HEAD(&card->devices);
 	init_rwsem(&card->controls_rwsem);

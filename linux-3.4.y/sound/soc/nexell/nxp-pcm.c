@@ -621,6 +621,8 @@ static struct snd_soc_platform_driver pcm_platform = {
 
 static int __devinit nxp_pcm_probe(struct platform_device *pdev)
 {
+	printk("+++ %s() call snd_soc_register_platform(), dev_name:%s\n", \
+		__func__, dev_name(&pdev->dev));
 	int ret = snd_soc_register_platform(&pdev->dev, &pcm_platform);
 	printk(KERN_INFO "snd pcm: %s sound platform '%s'\n", ret?"fail":"register", pdev->name);
 	return ret;
@@ -648,6 +650,8 @@ static struct platform_device pcm_device = {
 
 static int __init nxp_pcm_init(void)
 {
+	printk("+++ %s() register pcm device driver\n", __func__);
+
 	platform_device_register(&pcm_device);
 	return platform_driver_register(&pcm_driver);
 }
