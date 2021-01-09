@@ -286,6 +286,8 @@ static void boot_jump_linux(bootm_headers_t *images, int flag)
 		r2 = (unsigned long)images->ft_addr;
 	else
 		r2 = gd->bd->bi_boot_params;
+	
+	printf("~~~ %s() %d->\n", __FUNCTION__, __LINE__);
 
 	if (!fake)
 		kernel_entry(0, machid, r2);
@@ -303,6 +305,8 @@ int do_bootm_linux(int flag, int argc, char *argv[], bootm_headers_t *images)
 	/* No need for those on ARM */
 	if (flag & BOOTM_STATE_OS_BD_T || flag & BOOTM_STATE_OS_CMDLINE)
 		return -1;
+
+	printf("~~~ %s() %d->\n", __FUNCTION__, __LINE__);
 
 	if (flag & BOOTM_STATE_OS_PREP) {
 		boot_prep_linux(images);
