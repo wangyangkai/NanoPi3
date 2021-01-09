@@ -1,0 +1,216 @@
+
+/* build */
+build kernel uImage:
+cp arch/arm/configs/nanopi3_linux_config_wyk .config
+make uImage -j8
+
+build uboot bin:
+wyk@ubuntu:~/github/NanoPC-T3/uboot_nanopi2$ cd uboot_nanopi2/
+wyk@ubuntu:~/github/NanoPC-T3/uboot_nanopi2$ ./build.sh 
+
+build rootfs:
+wyk@ubuntu:~/github/NanoPC-T3$ cd buildroot/buildroot/
+cp configs/s5p6818_nanopi3_wyk_defconfig .config
+make -j8
+
+
+create boot.img:
+wyk@ubuntu:~/github/NanoPC-T3$ cd boot-img/
+wyk@ubuntu:~/github/NanoPC-T3/boot-img$ ls
+boot  build.sh
+wyk@ubuntu:~/github/NanoPC-T3/boot-img$ ./build.sh 
+shell pwd:/home/wyk/github/NanoPC-T3/boot-img
+make uImage
+make: Entering directory '/home/wyk/github/NanoPC-T3/linux-3.4.y'
+  CHK     include/linux/version.h
+  CHK     include/generated/utsrelease.h
+make[1]: 'include/generated/mach-types.h' is up to date.
+  CALL    scripts/checksyscalls.sh
+  CHK     include/generated/compile.h
+  Kernel: arch/arm/boot/Image is ready
+  Kernel: arch/arm/boot/zImage is ready
+  Image arch/arm/boot/uImage is ready
+make: Leaving directory '/home/wyk/github/NanoPC-T3/linux-3.4.y'
+rm /home/wyk/github/NanoPC-T3/boot-img/boot/uImage
+rm: cannot remove '/home/wyk/github/NanoPC-T3/boot-img/boot/uImage': No such file or directory
+cp /home/wyk/github/NanoPC-T3/boot-img/../linux-3.4.y/arch/arm/boot/uImage /home/wyk/github/NanoPC-T3/boot-img/boot/
+make_ext4fs -s -l 67108864 -a boot /home/wyk/github/NanoPC-T3/boot-img/boot.img /home/wyk/github/NanoPC-T3/boot-img/boot
+Creating filesystem with parameters:
+    Size: 67108864
+    Block size: 4096
+    Blocks per group: 32768
+    Inodes per group: 4096
+    Inode size: 256
+    Journal blocks: 1024
+    Label: 
+    Blocks: 16384
+    Block groups: 1
+    Reserved block group size: 7
+Created filesystem with 18/4096 inodes and 3240/16384 blocks
+wyk@ubuntu:~/github/NanoPC-T3/boot-img$ 
+
+/* build, end*/
+
+
+/* code source */
+wyk@ubuntu:~/NanoPi/linux-3.4.y$ git remote -v
+origin	https://github.com/friendlyarm/linux-3.4.y.git (fetch)
+origin	https://github.com/friendlyarm/linux-3.4.y.git (push)
+wyk@ubuntu:~/NanoPi/linux-3.4.y$ git branch -a
+* nanopi2-lollipop-mr1
+  remotes/origin/HEAD -> origin/nanopi2-lollipop-mr1
+  remotes/origin/nanopi2-lollipop-mr1
+  remotes/origin/s5p4418-nanopi2
+wyk@ubuntu:~/NanoPi/linux-3.4.y$ 
+
+
+wyk@ubuntu:~/NanoPi/uboot_nanopi2$ git remote -v
+origin	https://github.com/friendlyarm/uboot_nanopi2.git (fetch)
+origin	https://github.com/friendlyarm/uboot_nanopi2.git (push)
+wyk@ubuntu:~/NanoPi/uboot_nanopi2$ git branch -a
+* nanopi2-lollipop-mr1
+  remotes/origin/HEAD -> origin/nanopi2-lollipop-mr1
+  remotes/origin/nanopi2-lollipop-mr1
+  remotes/origin/s5p4418-nanopi2
+wyk@ubuntu:~/NanoPi/uboot_nanopi2$ 
+
+
+wyk@ubuntu:~/github/NanoPC-T3/buildroot/buildroot$ git remote -v
+origin	git://git.buildroot.net/buildroot (fetch)
+origin	git://git.buildroot.net/buildroot (push)
+wyk@ubuntu:~/github/NanoPC-T3/buildroot/buildroot$ git branch -a
+* master
+  remotes/origin/2012.11.x
+  remotes/origin/2013.08.x
+  remotes/origin/2015.08.x
+  remotes/origin/2015.11.x
+  remotes/origin/2016.08.x
+  remotes/origin/2016.11.x
+  remotes/origin/2017.02.x
+  remotes/origin/HEAD -> origin/master
+  remotes/origin/master
+wyk@ubuntu:~/github/NanoPC-T3/buildroot/buildroot$ git log -l 1
+commit cb0d87004c824dc6bb421fe8316428d51e1335bd
+Author: Tian Yuanhao <tianyuanhao@aliyun.com>
+Date:   Wed Dec 16 00:42:46 2020 -0800
+
+    package/balena-engine: new package
+    
+    Signed-off-by: Tian Yuanhao <tianyuanhao@aliyun.com>
+    Signed-off-by: Christian Stewart <christian@paral.in>
+    Reviewed-by: Christian Stewart <christian@paral.in>
+    Signed-off-by: Arnout Vandecappelle (Essensium/Mind) <arnout@mind.be>
+
+commit 66f10a26a19f4b45cdc5732c8953b3f560c17c6c
+Author: Romain Naour <romain.naour@smile.fr>
+Date:   Fri Apr 24 19:04:35 2020 +0200
+
+    package/libiec61850: new package
+    
+    Don't add mbedtls support since it require a bundled and specific
+    version.
+    
+    Keep experimental Python binding support disabled for now.
+    
+    Signed-off-by: Romain Naour <romain.naour@smile.fr>
+    Signed-off-by: Thomas Petazzoni <thomas.petazzoni@bootlin.com>
+
+wyk@ubuntu:~/github/NanoPC-T3/buildroot/buildroot$ 
+
+/* code source, end */
+
+
+/* uboot printenv: */
+first boot, scratch is cleared
+watchdog timer start
+
+
+working to aarch32
+waiting for pll change..
+
+--------------------------------------------------------------------------------
+ Second Boot by Nexell Co. : Ver0.3.6 - Built on Dec 15 2015 10:08:26
+--------------------------------------------------------------------------------
+
+DDR3 POR Init Start 0
+phy init
+Lock value  = 184
+GATE CYC    = 0x00000492
+GATE CODE   = 0x00000000
+Read  DQ    = 0x08080808
+Write DQ    = 0x08080808
+
+
+DDR3 Init Done!
+CCI Init!
+Wakeup CPU Wakeup CPU 1234567
+CPU Wakeup done! WFI is expected.
+CPU0 is Master!
+
+Loading from sdmmc...
+ Image Loading Done!
+Launch to 0x42C00000
+
+
+U-Boot 2014.07-g129c644-dirty (Jan 08 2021 - 22:42:26)
+
+PLL : [0] =  800000000, [1] =  800000000, [2] =  614394000, [3] =  800000000
+(0) PLL1: CPU  FCLK =  800000000, HCLK = 200000000 (G0)
+(7) PLL1: CPU  FCLK =  800000000, HCLK = 200000000 (G1)
+(2) PLL3: MEM  FCLK =  800000000, DCLK = 800000000, BCLK = 400000000, PCLK = 200000000
+(1) PLL0: BUS  BCLK =  400000000, PCLK = 200000000
+(8) PLL0: CCI4 BCLK =  400000000, PCLK = 200000000
+(3) PLL0: G3D  BCLK =  400000000
+(4) PLL0: CODA BCLK =  400000000, PCLK = 200000000
+(5) PLL0: DISP BCLK =  400000000, PCLK = 200000000
+(6) PLL0: HDMI PCLK =  100000000
+I2C:   ready
+DRAM:  256 MiB
+Heap = 0x43000000~0x45000000
+Code = 0x42c00000~0x42c75984
+GLD  = 0x42bffeb8
+GLBD = 0x42bffe68
+SP   = 0x42bffe68,0x42bffe48(CURR)
+PC   = 0x42c06274
+TAGS = 0x40000100 
+PAGE = 0x42c80000~0x42c8c000
+MACH = [4330]   
+VER  = 0      
+BOARD= [nanopi3]    
+LCD  = N/A (-1)
+MMC:   NXP DWMMC: 0, NXP DWMMC: 1, NXP DWMMC: 2
+In:    serial
+Out:   serial
+Err:   serial
+switch to partitions #0, OK
+mmc2(part 0) is current device
+HDMI: display.0, preset 0 (1280 *  720)
+HDMI: PHY Ready!!!
+DONE: Logo bmp 800 by 480 (3bpp), len=1152056 
+DRAW: 0x47000000 -> 0x46000000 
+Hit any key to stop autoboot:  0 
+s5p6818# 
+s5p6818# printenv
+baudrate=115200
+bloader=ext4load mmc 2:1
+bootargs=console=ttySAC0,115200n8 root=/dev/mmcblk0p3 rootfstype=ext4 rootwait init=/linuxrc g_ether.host_addr=82:cf:ce:fa:68:18 console=tty1 lcd=HDMI720P60 bootdev=2
+bootcmd=$bloader 0x48000000 $kernel;$bloader 0x49000000 root.img.gz;bootm 0x48000000
+bootdelay=1
+bootfile=uImage
+ethaddr=00:e2:1c:ba:e8:60
+fastboot=2ndboot:2nd:0x200,0x7800;bootloader:boot:0x8000,0x70000;boot:ext4:0x00100000,0x04000000;system:ext4:0x04100000,0x02F200000;cache:ext4:0x33300000,0x1AC00000;misc:emmc:0x4E000000,0x00800000;recovery:emmc:0x4E900000,0x01600000;userdata:ext4:0x50000000,0x0;
+fastbootdev=flash=mmc,2:parts
+filesize=119438
+gatewayip=192.168.1.254
+ipaddr=192.168.1.165
+kernel=uImage.hdmi
+netmask=255.255.255.0
+serverip=192.168.1.164
+stderr=serial
+stdin=serial
+stdout=serial
+
+Environment size: 843/32764 bytes
+s5p6818# 
+
+/* uboot printenv, end */
