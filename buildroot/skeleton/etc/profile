@@ -9,6 +9,9 @@ if [ "$PS1" ]; then
 fi
 
 export EDITOR='/bin/vi'
+export HOSTNAME=`/bin/hostname`
+#export PS1="[\u@\h \W]\\$ "
+export PS1="[\u@\h \w]\\$ "
 
 # Source configuration files from /etc/profile.d
 for i in /etc/profile.d/*.sh ; do
