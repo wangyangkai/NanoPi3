@@ -1,7 +1,7 @@
 
 /* build */
 build kernel uImage:
-cp arch/arm/configs/nanopi3_linux_config_wyk .config
+cp arch/arm/configs/s5p6818_nanopi3_linux_wyk_config .config
 make uImage -j8
 
 build uboot bin:

@@ -5,6 +5,9 @@ echo "shell pwd:$DIR"
 echo "rm $DIR/rootfs.img"
 rm $DIR/rootfs.img
 
+echo "mkdir $DIR/rootfs"
+mkdir $DIR/rootfs
+
 echo "cp $DIR/../buildroot/buildroot/output/target/* $DIR/rootfs/ -rf"
 cp $DIR/../buildroot/buildroot/output/target/* $DIR/rootfs/ -rf
 
