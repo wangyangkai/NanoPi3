@@ -13,7 +13,7 @@ DIR="$( cd "$( dirname "$0"  )" && pwd  )"
 echo "shell pwd:$DIR"
 
 echo "make uImage"
-make -C $DIR/../linux-3.4.y uImage -j16
+make ARCH=arm CROSS_COMPILE=/opt/toolchain/arm-cortex_a8-linux-gnueabi-4.9.3/bin/arm-cortex_a8-linux-gnueabi- -C $DIR/../linux-3.4.y uImage -j16
 
 echo "rm $DIR/boot/uImage"
 rm $DIR/boot/uImage
