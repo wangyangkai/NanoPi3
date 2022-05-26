@@ -15,24 +15,24 @@ MAKE_JOBS=4
 .PHONY: usage
 usage:
 	@echo "build help"
-	@echo "    make toolchain         -- unzip the cross compilation tool"
-	@echo "    make all        	      -- build all, boot kernel rootfs"
-	@echo "    make boot       	      -- build only boot"
-	@echo "    make kernel     	      -- build only kernel"
-	@echo "    make kernel_menuconfig -- build the kernel configuration "
-	@echo "    make rootfs     	      -- build only rootfs project "
-	@echo "    make install    	      -- install to target"
-	@echo "    make boot_clean	      -- clean boot"
-	@echo "    make kernel_clean      -- clean kernel"
-	@echo "    make rootfs_clean      -- clean rootfs"
-	@echo "    make clean_all          -- clean all, boot kernel rootfs"
+	@echo "    make toolchain          -- unzip the cross compilation tool"
+	@echo "    make all                -- build all, bootloader kernel rootfs"
+	@echo "    make bootloader         -- build only bootloader"
+	@echo "    make kernel             -- build only kernel"
+	@echo "    make kernel_menuconfig  -- build the kernel configuration "
+	@echo "    make rootfs             -- build only rootfs project "
+	@echo "    make install            -- install to target"
+	@echo "    make bootloader_clean   -- clean bootloader"
+	@echo "    make kernel_clean       -- clean kernel"
+	@echo "    make rootfs_clean       -- clean rootfs"
+	@echo "    make clean_all          -- clean all, bootloader kernel rootfs"
 	@echo 
 
-.PHONY: toolchain all boot kernel kernel_menuconfig boot_image rootfs  install boot_clean kernel_clean rootfs_clean clean_all
+.PHONY: toolchain all bootloader kernel kernel_menuconfig boot_image rootfs  install bootloader_clean kernel_clean rootfs_clean clean_all
 
-all: boot kernel rootfs
-clean_all: boot_clean kernel_clean rootfs_clean
-install: boot_install kernel_install boot_image rootfs_install 
+all: bootloader kernel rootfs
+clean_all: bootloader_clean kernel_clean rootfs_clean
+install: bootloader_install kernel_install boot_image rootfs_install 
 
 toolchain:
 	@echo "~~~ decompres the cross compilation tool"
@@ -41,8 +41,8 @@ toolchain:
 	@echo "\n$(BUILD_TOOLS_PATH)/$(CROSS_COMPILE)gcc -v"
 	@$(BUILD_TOOLS_PATH)/$(CROSS_COMPILE)gcc -v
 
-boot:
-	@echo "~~~ make boot"
+bootloader:
+	@echo "~~~ make bootloader"
 
 ifeq ($(BOOT_DIR)/.config, $(wildcard $(BOOT_DIR)/.config))
 	@cd $(BOOT_DIR); \
@@ -55,12 +55,12 @@ ifneq ($(BOOT_DIR)/.config, $(wildcard $(BOOT_DIR)/.config))
 	make CROSS_COMPILE=${BUILD_TOOLS_PATH}/${CROSS_COMPILE} -j$(MAKE_JOBS);
 endif
 
-	@echo "\nbuild boot done"
+	@echo "\nbuild bootloader done"
 
-boot_clean:
+bootloader_clean:
 	@cd $(BOOT_DIR); make distclean;
 
-boot_install:
+bootloader_install:
 	install $(BOOT_DIR)/u-boot.bin $(OUTPUT_DIR)/
 
 kernel:
